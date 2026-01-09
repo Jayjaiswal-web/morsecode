@@ -3,7 +3,7 @@ Integrated Home UI - Main Entry Point
 Connects to enrollment and sign-in interfaces
 """
 import tkinter as tk
-from tkinter import font
+from tkinter import font, messagebox
 import subprocess
 import sys
 import os
@@ -21,22 +21,76 @@ ACCENT = "#22c55e"
 
 def open_enrollment():
     """Open the enrollment interface"""
-    subprocess.Popen([
-        sys.executable,
-        os.path.join(BASE_DIR, "integrated_enrollment_ui.py")
-    ])
-    root.destroy()
+    try:
+        # Try different possible filenames
+        possible_files = [
+            "enrollment_ui (1).py",
+            "enrollment_ui.py",
+            "integrated_enrollment_ui.py"
+        ]
+        
+        enrollment_file = None
+        for filename in possible_files:
+            filepath = os.path.join(BASE_DIR, filename)
+            if os.path.exists(filepath):
+                enrollment_file = filepath
+                break
+        
+        if enrollment_file:
+            # Don't destroy root - just hide it
+            root.withdraw()
+            
+            # Open enrollment in same process
+            subprocess.Popen([sys.executable, enrollment_file])
+            
+            # Show root again after some delay (or you can close it)
+            # root.after(1000, lambda: root.deiconify())
+        else:
+            messagebox.showerror(
+                "File Not Found",
+                "Could not find enrollment_ui.py file.\n\n"
+                "Please ensure the file is in the same directory."
+            )
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to open enrollment:\n{str(e)}")
 
 def open_signin():
     """Open the sign-in interface"""
-    subprocess.Popen([
-        sys.executable,
-        os.path.join(BASE_DIR, "integrated_signin_ui.py")
-    ])
-    root.destroy()
+    try:
+        # Try different possible filenames
+        possible_files = [
+            "signin_ui (1).py",
+            "signin_ui.py",
+            "integrated_signin_ui.py"
+        ]
+        
+        signin_file = None
+        for filename in possible_files:
+            filepath = os.path.join(BASE_DIR, filename)
+            if os.path.exists(filepath):
+                signin_file = filepath
+                break
+        
+        if signin_file:
+            # Don't destroy root - just hide it
+            root.withdraw()
+            
+            # Open sign-in in same process
+            subprocess.Popen([sys.executable, signin_file])
+            
+            # Show root again after some delay (or you can close it)
+            # root.after(1000, lambda: root.deiconify())
+        else:
+            messagebox.showerror(
+                "File Not Found",
+                "Could not find signin_ui.py file.\n\n"
+                "Please ensure the file is in the same directory."
+            )
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to open sign-in:\n{str(e)}")
 
 def show_stats():
-    """Show user statistics (optional feature)"""
+    """Show user statistics"""
     stats_window = tk.Toplevel(root)
     stats_window.title("User Statistics")
     stats_window.geometry("600x400")
@@ -144,7 +198,7 @@ small_font = font.Font(family="Helvetica", size=11)
 main_frame = tk.Frame(root, bg=BG_COLOR)
 main_frame.pack(expand=True)
 
-# Logo/Icon (you can replace with actual logo)
+# Logo/Icon
 tk.Label(
     main_frame,
     text="🔐",
@@ -287,6 +341,15 @@ signin_btn.bind("<Leave>", lambda e: on_leave(e, signin_btn, PRIMARY_BTN))
 
 stats_btn.bind("<Enter>", lambda e: on_enter(e, stats_btn, "#334155"))
 stats_btn.bind("<Leave>", lambda e: on_leave(e, stats_btn, "#1e293b"))
+
+# Handle window close
+def on_closing():
+    """Handle window close event"""
+    root.destroy()
+    # Make sure all child processes are also terminated
+    sys.exit(0)
+
+root.protocol("WM_DELETE_WINDOW", on_closing)
 
 # Start application
 root.mainloop()
